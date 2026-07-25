@@ -1,0 +1,159 @@
+// ==========================================================
+// SCHEMA DO BANCO - Plataforma de Estudos ENEM/Vestibular
+// ==========================================================
+// Organizado por domínio: Usuário -> Matérias -> Questões -> Progresso
+// Pensado para crescer: novos modelos podem ser adicionados sem
+// quebrar os existentes (relações usam IDs, nunca campos soltos).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------- USUÁRIO ----------------
+
+model User {
+  id                  String    @id @default(uuid())
+  name                String
+  email               String    @unique
+  passwordHash        String
+  targetExam          ExamType  @default(ENEM)
+  aiExplanationsUsed   Int       @default(0)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  weakSubjects  UserSubject[]
+  studyPlans    StudyPlan[]
+  attempts      Attempt[]
+  progress      Progress[]
+}
+
+enum ExamType {
+  ENEM
+  FUVEST
+  UNICAMP
+  OUTRO
+}
+
+// ---------------- MATÉRIAS ----------------
+
+model Subject {
+  id          String   @id @default(uuid())
+  name        String   @unique   // ex: "Matemática", "Química"
+  area        String?            // ex: "Ciências da Natureza"
+
+  topics        Topic[]
+  users         UserSubject[]
+  questions     Question[]
+  progress      Progress[]
+  studySessions StudySession[]
+}
+
+model Topic {
+  id          String   @id @default(uuid())
+  name        String             // ex: "Funções", "Estequiometria"
+  subjectId   String
+  subject     Subject  @relation(fields: [subjectId], references: [id])
+
+  questions   Question[]
+}
+
+// Relação N:N entre User e Subject, guardando o nível de dificuldade
+// que o próprio aluno declarou (base pro cronograma)
+model UserSubject {
+  id          String   @id @default(uuid())
+  userId      String
+  subjectId   String
+  difficulty  Int      @default(3) // 1 (fácil) a 5 (muito difícil)
+
+  user        User     @relation(fields: [userId], references: [id])
+  subject     Subject  @relation(fields: [subjectId], references: [id])
+
+  @@unique([userId, subjectId])
+}
+
+// ---------------- QUESTÕES ----------------
+
+model Question {
+  id            String    @id @default(uuid())
+  statement     String    // enunciado
+  year          Int?      // ano da prova (ex: 2023)
+  source        String?   // ex: "ENEM 2023 - Dia 1"
+  subjectId     String
+  topicId       String?
+  difficulty    Int       @default(3)
+
+  subject       Subject   @relation(fields: [subjectId], references: [id])
+  topic         Topic?    @relation(fields: [topicId], references: [id])
+  alternatives  Alternative[]
+  attempts      Attempt[]
+}
+
+model Alternative {
+  id          String   @id @default(uuid())
+  questionId  String
+  label       String   // "A", "B", "C"...
+  text        String
+  isCorrect   Boolean  @default(false)
+
+  question    Question @relation(fields: [questionId], references: [id])
+}
+
+// ---------------- SIMULADOS / TENTATIVAS ----------------
+
+model Attempt {
+  id            String   @id @default(uuid())
+  userId        String
+  questionId    String
+  chosenLabel   String?  // qual alternativa o aluno marcou
+  isCorrect     Boolean
+  aiExplanation String?  // explicação gerada por IA quando erra
+  createdAt     DateTime @default(now())
+
+  user          User     @relation(fields: [userId], references: [id])
+  question      Question @relation(fields: [questionId], references: [id])
+}
+
+// ---------------- CRONOGRAMA (SPACED REPETITION) ----------------
+
+model StudyPlan {
+  id          String   @id @default(uuid())
+  userId      String
+  weekStart   DateTime
+  createdAt   DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id])
+  sessions    StudySession[]
+}
+
+model StudySession {
+  id            String    @id @default(uuid())
+  studyPlanId   String
+  subjectId     String
+  scheduledFor  DateTime
+  durationMin   Int       @default(45)
+  completed     Boolean   @default(false)
+
+  studyPlan     StudyPlan @relation(fields: [studyPlanId], references: [id])
+  subject       Subject   @relation(fields: [subjectId], references: [id])
+}
+
+// ---------------- PROGRESSO ----------------
+
+model Progress {
+  id            String   @id @default(uuid())
+  userId        String
+  subjectId     String
+  correctCount  Int      @default(0)
+  totalCount    Int      @default(0)
+  lastReviewed  DateTime @default(now())
+
+  user          User     @relation(fields: [userId], references: [id])
+  subject       Subject  @relation(fields: [subjectId], references: [id])
+
+  @@unique([userId, subjectId])
+}
