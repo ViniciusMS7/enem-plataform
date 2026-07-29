@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { LogOut } from "lucide-react";
 import { getUser, clearUser, StoredUser } from "@/services/auth";
@@ -9,12 +9,16 @@ import { useToast } from "./ToastProvider";
 
 export default function AuthNav() {
   const router = useRouter();
+  const pathname = usePathname();
   const showToast = useToast();
   const [user, setUser] = useState<StoredUser | null>(null);
 
+  // O layout (e esse componente) continua montado entre navegações no
+  // App Router — sem isso, o menu não percebia quando o login/logout
+  // mudava o localStorage. Rechecar a cada troca de rota resolve.
   useEffect(() => {
     setUser(getUser());
-  }, []);
+  }, [pathname]);
 
   function sair() {
     clearUser();
