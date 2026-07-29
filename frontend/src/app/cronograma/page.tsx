@@ -7,10 +7,12 @@ import { api } from "@/services/api";
 import { getUser, StoredUser } from "@/services/auth";
 import { StudyPlan } from "@/types";
 import { iconePorMateria } from "@/components/subjectIcons";
+import { useToast } from "@/components/ToastProvider";
 
 const DIAS_SEMANA = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 
 export default function Cronograma() {
+  const showToast = useToast();
   const [user, setUser] = useState<StoredUser | null>(null);
   const [plan, setPlan] = useState<StudyPlan | null>(null);
   const [carregando, setCarregando] = useState(false);
@@ -18,15 +20,18 @@ export default function Cronograma() {
   useEffect(() => {
     const u = getUser();
     setUser(u);
-    if (u) api.getPlan(u.id).then(setPlan).catch(() => setPlan(null));
+    if (u) api.getPlan().then(setPlan).catch(() => setPlan(null));
   }, []);
 
   async function gerar() {
     if (!user) return;
     setCarregando(true);
     try {
-      const novo = await api.generatePlan(user.id);
+      const novo = await api.generatePlan();
       setPlan(novo);
+      showToast("Cronograma gerado com base nas suas dificuldades.", "success");
+    } catch {
+      showToast("Não deu pra gerar o cronograma. Confere se marcou as dificuldades e tenta de novo.", "error");
     } finally {
       setCarregando(false);
     }

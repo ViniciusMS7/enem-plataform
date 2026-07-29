@@ -23,6 +23,10 @@ model User {
   passwordHash        String
   targetExam          ExamType  @default(ENEM)
   aiExplanationsUsed   Int       @default(0)
+  customSearchesUsed   Int       @default(0)
+  currentStreak       Int       @default(0)
+  longestStreak       Int       @default(0)
+  lastStudyDate       DateTime?
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
@@ -30,6 +34,7 @@ model User {
   studyPlans    StudyPlan[]
   attempts      Attempt[]
   progress      Progress[]
+  savedCustomTopics UserCustomTopic[]
 }
 
 enum ExamType {
@@ -81,11 +86,13 @@ model UserSubject {
 model Question {
   id            String    @id @default(uuid())
   statement     String    // enunciado
+  imageUrl      String?   // imagem/gráfico/mapa que acompanha o texto-base, se houver
   year          Int?      // ano da prova (ex: 2023)
   source        String?   // ex: "ENEM 2023 - Dia 1"
   subjectId     String
   topicId       String?
   difficulty    Int       @default(3)
+  explanation   String?   // explicação fixa, escrita à mão — não gasta IA
 
   subject       Subject   @relation(fields: [subjectId], references: [id])
   topic         Topic?    @relation(fields: [topicId], references: [id])
@@ -106,16 +113,17 @@ model Alternative {
 // ---------------- SIMULADOS / TENTATIVAS ----------------
 
 model Attempt {
-  id            String   @id @default(uuid())
-  userId        String
-  questionId    String
-  chosenLabel   String?  // qual alternativa o aluno marcou
-  isCorrect     Boolean
-  aiExplanation String?  // explicação gerada por IA quando erra
-  createdAt     DateTime @default(now())
+  id                String   @id @default(uuid())
+  userId            String
+  questionId        String
+  chosenLabel       String?  // qual alternativa o aluno marcou
+  isCorrect         Boolean
+  aiExplanation     String?  // explicação gerada por IA quando erra
+  timeSpentSeconds  Int?     // quanto tempo o aluno levou nessa questão
+  createdAt         DateTime @default(now())
 
-  user          User     @relation(fields: [userId], references: [id])
-  question      Question @relation(fields: [questionId], references: [id])
+  user              User     @relation(fields: [userId], references: [id])
+  question          Question @relation(fields: [questionId], references: [id])
 }
 
 // ---------------- CRONOGRAMA (SPACED REPETITION) ----------------
@@ -156,4 +164,53 @@ model Progress {
   subject       Subject  @relation(fields: [subjectId], references: [id])
 
   @@unique([userId, subjectId])
+}
+
+// ---------------- PESQUISA LIVRE (qualquer assunto, não só ENEM) ----------------
+// Modelo separado do catálogo fixo do ENEM: aqui o conteúdo é gerado sob
+// demanda por IA na primeira pesquisa, e depois fica em cache pra todo mundo.
+
+model CustomTopic {
+  id        String   @id @default(uuid())
+  query     String   // texto original digitado pelo usuário, ex: "Cálculo I"
+  slug      String   @unique // normalizado, usado como chave de cache: "calculo-i"
+  summary   String   // resumo/explicação do assunto, gerado por IA
+  createdAt DateTime @default(now())
+
+  questions    CustomQuestion[]
+  savedByUsers UserCustomTopic[]
+}
+
+// Um usuário "salvando" um assunto que pesquisou, pra ele aparecer em
+// /materias e poder ser incluído no simulado personalizado.
+model UserCustomTopic {
+  id            String   @id @default(uuid())
+  userId        String
+  customTopicId String
+  createdAt     DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id])
+  customTopic CustomTopic @relation(fields: [customTopicId], references: [id])
+
+  @@unique([userId, customTopicId])
+}
+
+model CustomQuestion {
+  id            String   @id @default(uuid())
+  customTopicId String
+  statement     String
+  explanation   String
+
+  customTopic   CustomTopic @relation(fields: [customTopicId], references: [id])
+  alternatives  CustomAlternative[]
+}
+
+model CustomAlternative {
+  id               String  @id @default(uuid())
+  customQuestionId String
+  label            String
+  text             String
+  isCorrect        Boolean @default(false)
+
+  customQuestion   CustomQuestion @relation(fields: [customQuestionId], references: [id])
 }

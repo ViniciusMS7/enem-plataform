@@ -1,0 +1,43 @@
+<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Sans, Arial, sans-serif">
+  <rect x="0" y="0" width="560" height="300" fill="#ffffff"/>
+  <text x="280" y="30" text-anchor="middle" font-size="16" font-weight="700" fill="#16233b">
+    Esquema simplificado do ciclo do açúcar (séc. XVI-XVII)
+  </text>
+
+  <!-- caixa 1: engenho -->
+  <rect x="30" y="80" width="140" height="70" fill="none" stroke="#16233b" stroke-width="2"/>
+  <text x="100" y="110" text-anchor="middle" font-size="13" fill="#16233b">Engenho</text>
+  <text x="100" y="128" text-anchor="middle" font-size="11" fill="#16233b" opacity="0.7">produção</text>
+  <text x="100" y="143" text-anchor="middle" font-size="11" fill="#16233b" opacity="0.7">(mão de obra escravizada)</text>
+
+  <!-- seta 1 -->
+  <line x1="170" y1="115" x2="220" y2="115" stroke="#ff6b4a" stroke-width="3" marker-end="url(#seta)"/>
+
+  <!-- caixa 2: porto colonial -->
+  <rect x="220" y="80" width="140" height="70" fill="none" stroke="#16233b" stroke-width="2"/>
+  <text x="290" y="110" text-anchor="middle" font-size="13" fill="#16233b">Porto colonial</text>
+  <text x="290" y="128" text-anchor="middle" font-size="11" fill="#16233b" opacity="0.7">escoamento</text>
+
+  <!-- seta 2 -->
+  <line x1="360" y1="115" x2="410" y2="115" stroke="#ff6b4a" stroke-width="3" marker-end="url(#seta)"/>
+
+  <!-- caixa 3: mercado europeu -->
+  <rect x="410" y="80" width="130" height="70" fill="none" stroke="#16233b" stroke-width="2"/>
+  <text x="475" y="110" text-anchor="middle" font-size="13" fill="#16233b">Mercado</text>
+  <text x="475" y="126" text-anchor="middle" font-size="13" fill="#16233b">europeu</text>
+
+  <!-- seta de volta: metrópole -->
+  <path d="M 475 150 L 475 220 L 100 220 L 100 150" fill="none" stroke="#16233b" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#setaFina)"/>
+  <text x="290" y="240" text-anchor="middle" font-size="12" fill="#16233b" opacity="0.7">
+    lucro concentrado na metrópole (pacto colonial)
+  </text>
+
+  <defs>
+    <marker id="seta" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#ff6b4a"/>
+    </marker>
+    <marker id="setaFina" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#16233b"/>
+    </marker>
+  </defs>
+</svg>

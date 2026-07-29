@@ -2,30 +2,57 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, ArrowRight } from "lucide-react";
+import { Check, ArrowRight, Sparkles, X } from "lucide-react";
 import { api } from "@/services/api";
 import { getUser, StoredUser } from "@/services/auth";
-import { Subject } from "@/types";
+import { Subject, CustomTopic } from "@/types";
 import { iconePorMateria } from "@/components/subjectIcons";
+import { useToast } from "@/components/ToastProvider";
 
 const NIVEIS = [1, 2, 3, 4, 5];
 
 export default function Materias() {
+  const showToast = useToast();
   const [user, setUser] = useState<StoredUser | null>(null);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [selecionado, setSelecionado] = useState<Record<string, number>>({});
   const [salvo, setSalvo] = useState<Record<string, boolean>>({});
+  const [meusAssuntos, setMeusAssuntos] = useState<CustomTopic[]>([]);
 
   useEffect(() => {
     setUser(getUser());
     api.getSubjects().then(setSubjects);
   }, []);
 
+  useEffect(() => {
+    if (!user) return;
+    api.getMyCustomTopics().then(setMeusAssuntos);
+  }, [user]);
+
   async function marcar(subjectId: string, difficulty: number) {
     if (!user) return;
+    const anterior = selecionado[subjectId];
     setSelecionado((s) => ({ ...s, [subjectId]: difficulty }));
-    await api.setSubjectDifficulty(subjectId, user.id, difficulty);
-    setSalvo((s) => ({ ...s, [subjectId]: true }));
+    try {
+      await api.setSubjectDifficulty(subjectId, difficulty);
+      setSalvo((s) => ({ ...s, [subjectId]: true }));
+    } catch {
+      setSelecionado((s) => ({ ...s, [subjectId]: anterior }));
+      showToast("Não deu pra salvar essa nota. Tenta de novo.", "error");
+    }
+  }
+
+  async function removerAssunto(id: string) {
+    if (!user) return;
+    const removido = meusAssuntos.find((t) => t.id === id);
+    setMeusAssuntos((atual) => atual.filter((t) => t.id !== id));
+    try {
+      await api.removeCustomTopic(id);
+      showToast(`"${removido?.query}" foi removido das suas matérias.`, "info");
+    } catch {
+      if (removido) setMeusAssuntos((atual) => [...atual, removido]);
+      showToast("Não deu pra remover. Tenta de novo.", "error");
+    }
   }
 
   if (!user) {
@@ -101,6 +128,50 @@ export default function Materias() {
       >
         gerar cronograma da semana <ArrowRight size={16} />
       </Link>
+
+      {meusAssuntos.length > 0 && (
+        <div className="mt-14">
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles size={18} />
+            <h2 className="font-display font-bold text-2xl">Seus assuntos pesquisados</h2>
+          </div>
+          <p className="text-ink/70 mb-6 text-sm">
+            Assuntos fora do ENEM que você pesquisou e salvou. Dá pra praticar sozinho aqui ou
+            incluir no simulado personalizado.
+          </p>
+
+          <div className="space-y-3">
+            {meusAssuntos.map((t) => (
+              <div
+                key={t.id}
+                className="border-2 border-ink/30 p-4 bg-white/40 flex items-center justify-between gap-3 flex-wrap"
+              >
+                <div>
+                  <p className="font-display font-bold">{t.query}</p>
+                  <p className="font-mono text-xs text-ink/50">
+                    {t.questions.length} questões
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={`/simulado/assunto/${t.id}`}
+                    className="inline-flex items-center gap-1 font-mono text-xs border-2 border-ink px-3 py-1.5 hover:bg-accent transition-colors"
+                  >
+                    praticar <ArrowRight size={12} />
+                  </Link>
+                  <button
+                    onClick={() => removerAssunto(t.id)}
+                    title="Remover das suas matérias"
+                    className="inline-flex items-center gap-1 font-mono text-xs border-2 border-ink/30 text-ink/50 px-2 py-1.5 hover:border-incorrect hover:text-incorrect transition-colors"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

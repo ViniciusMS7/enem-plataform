@@ -10,7 +10,8 @@ export async function listSubjects(_req: Request, res: Response) {
 // Essa nota alimenta o algoritmo de cronograma (studyPlanService).
 export async function setUserSubjectDifficulty(req: Request, res: Response) {
   const { subjectId } = req.params;
-  const { userId, difficulty } = req.body;
+  const userId = req.userId!;
+  const { difficulty } = req.body;
 
   const record = await prisma.userSubject.upsert({
     where: { userId_subjectId: { userId, subjectId } },

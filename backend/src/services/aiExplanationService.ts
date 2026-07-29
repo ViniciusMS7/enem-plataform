@@ -1,6 +1,6 @@
 /**
  * Isolado de propósito: se um dia você quiser trocar de provedor de IA
- * (Anthropic <-> OpenAI <-> outro), só mexe neste arquivo.
+ * (Gemini <-> OpenAI <-> outro), só mexe neste arquivo.
  * O resto do sistema só chama `explainWrongAnswer` e recebe uma string.
  */
 
@@ -25,28 +25,28 @@ Explique de forma curta e didática por que a alternativa correta é essa,
 e por que a escolhida está errada. Fale diretamente com o aluno.
 `.trim();
 
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": process.env.AI_API_KEY || "",
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-5",
-      max_tokens: 400,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
+  // Google AI Studio / Gemini API — tem camada gratuita sem cartão de crédito.
+  // Pegue uma chave em https://aistudio.google.com/apikey e coloque em GEMINI_API_KEY no .env
+  const model = process.env.GEMINI_MODEL || "gemini-flash-lite-latest";
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY || ""}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+      }),
+    }
+  );
 
   const data = await response.json();
 
   if (!response.ok) {
-    console.error("Erro da API Anthropic:", JSON.stringify(data));
+    console.error("Erro da API Gemini:", JSON.stringify(data));
     return "Não foi possível gerar explicação agora.";
   }
 
-  const text = data?.content?.[0]?.text;
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
   return text || "Não foi possível gerar explicação agora.";
 }

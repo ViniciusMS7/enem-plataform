@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ClipboardList, CalendarDays, PencilLine, ArrowRight } from "lucide-react";
 import CountdownStamp from "@/components/CountdownStamp";
 import MarkerUnderline from "@/components/MarkerUnderline";
+import StreakBadge from "@/components/StreakBadge";
 import { getUser, StoredUser } from "@/services/auth";
 
 const PASSOS = [
@@ -77,8 +78,11 @@ export default function Home() {
           style={{ animationDelay: "0.2s" }}
         >
           <p className="font-mono text-xs uppercase tracking-widest text-ink/50">logado como</p>
-          <p className="font-display font-bold text-xl mt-1">{user.name}</p>
-          <div className="flex gap-6 mt-5">
+          <div className="flex items-center justify-between flex-wrap gap-4 mt-1">
+            <p className="font-display font-bold text-xl">{user.name}</p>
+            <StreakBadge />
+          </div>
+          <div className="flex gap-6 mt-5 flex-wrap">
             <Link
               href="/materias"
               className="inline-flex items-center gap-1 font-mono text-sm border-b-2 border-accent hover:gap-2 transition-all"
@@ -90,6 +94,12 @@ export default function Home() {
               className="inline-flex items-center gap-1 font-mono text-sm border-b-2 border-accent hover:gap-2 transition-all"
             >
               ver cronograma <ArrowRight size={14} />
+            </Link>
+            <Link
+              href="/simulado/revisao"
+              className="inline-flex items-center gap-1 font-mono text-sm border-b-2 border-accent hover:gap-2 transition-all"
+            >
+              revisar meus erros <ArrowRight size={14} />
             </Link>
           </div>
         </div>

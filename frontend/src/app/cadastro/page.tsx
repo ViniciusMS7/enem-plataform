@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { api } from "@/services/api";
 import { saveUser } from "@/services/auth";
@@ -20,8 +21,8 @@ export default function Cadastro() {
     setErro(null);
     setCarregando(true);
     try {
-      const user = await api.register({ name, email, password });
-      saveUser(user);
+      const { user, token } = await api.register({ name, email, password });
+      saveUser(user, token);
       router.push("/materias");
     } catch (err) {
       setErro("Não deu pra criar sua conta. Confere se o e-mail já não está em uso.");
@@ -83,6 +84,13 @@ export default function Cadastro() {
           {!carregando && <ArrowRight size={16} />}
         </button>
       </form>
+
+      <p className="text-sm text-ink/60 mt-6">
+        Já tem conta?{" "}
+        <Link href="/login" className="font-mono border-b-2 border-accent">
+          entrar
+        </Link>
+      </p>
     </div>
   );
 }

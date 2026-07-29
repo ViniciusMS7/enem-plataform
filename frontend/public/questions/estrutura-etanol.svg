@@ -1,0 +1,37 @@
+<svg viewBox="0 0 500 260" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">
+  <rect x="0" y="0" width="500" height="260" fill="#ffffff"/>
+  <text x="250" y="30" text-anchor="middle" font-size="16" font-weight="700" fill="#16233b" font-family="IBM Plex Sans, Arial, sans-serif">
+    Fórmula estrutural do etanol (C₂H₅OH)
+  </text>
+
+  <!-- esqueleto carbono-carbono-oxigênio -->
+  <line x1="140" y1="150" x2="210" y2="110" stroke="#16233b" stroke-width="3"/>
+  <line x1="210" y1="110" x2="280" y2="150" stroke="#16233b" stroke-width="3"/>
+  <line x1="280" y1="150" x2="350" y2="110" stroke="#16233b" stroke-width="3"/>
+
+  <!-- hidrogênios do primeiro carbono -->
+  <line x1="140" y1="150" x2="110" y2="120" stroke="#16233b" stroke-width="1.5"/>
+  <line x1="140" y1="150" x2="110" y2="180" stroke="#16233b" stroke-width="1.5"/>
+  <line x1="140" y1="150" x2="150" y2="190" stroke="#16233b" stroke-width="1.5"/>
+  <text x="98" y="115" font-size="14" fill="#ff6b4a">H</text>
+  <text x="98" y="188" font-size="14" fill="#ff6b4a">H</text>
+  <text x="145" y="205" font-size="14" fill="#ff6b4a">H</text>
+
+  <!-- hidrogênios do segundo carbono -->
+  <line x1="210" y1="110" x2="210" y2="75" stroke="#16233b" stroke-width="1.5"/>
+  <text x="203" y="65" font-size="14" fill="#ff6b4a">H</text>
+
+  <!-- hidrogênios do terceiro carbono (CH2) -->
+  <line x1="280" y1="150" x2="280" y2="190" stroke="#16233b" stroke-width="1.5"/>
+  <text x="273" y="205" font-size="14" fill="#ff6b4a">H</text>
+
+  <!-- OH terminal -->
+  <text x="345" y="90" font-size="16" font-weight="700" fill="#16233b">OH</text>
+
+  <text x="130" y="170" font-size="16" font-weight="700" fill="#16233b">C</text>
+  <text x="200" y="130" font-size="16" font-weight="700" fill="#16233b">C</text>
+
+  <text x="250" y="235" text-anchor="middle" font-size="12" fill="#16233b" opacity="0.6">
+    Representação simplificada, hidrogênios do grupo CH₃ omitidos para clareza
+  </text>
+</svg>
